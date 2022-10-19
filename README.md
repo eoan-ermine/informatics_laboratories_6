@@ -14,14 +14,24 @@
 
 ## Инструкция по запуску
 
-С использованием пакетного менеджера `poetry`:
+Перед запуском программы в корневой директории проекта необходимо создать файл `.env` с желаемыми credentials базы данных:
+
+```
+PG_DATABASE=...
+PG_USER=...
+PG_PASSWORD=...
+PG_HOST=...
+PG_PORT=...
+```
+
+Запуск с использованием пакетного менеджера `poetry`:
 
 ```bash
 poetry install && poetry shell
 python3 telegram_bot
 ```
 
-Стандартными средствами `python` (рекомендуется прежде создать отдельное [виртуальное окружение](https://docs.python.org/3/library/venv.html)):
+Запуск стандартными средствами `python` (рекомендуется прежде создать отдельное [виртуальное окружение](https://docs.python.org/3/library/venv.html)):
 
 ```bash
 pip3 install -r requirements.txt
