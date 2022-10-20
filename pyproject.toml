@@ -8,6 +8,7 @@ authors = ["Name Surname <email@domain.com>"]
 python = "^3.10"
 pyTelegramBotAPI = "^4.7.0"
 psycopg2-binary = "^2.9.4"
+python-dotenv = "^0.21.0"
 
 [tool.poetry.dev-dependencies]
 
