@@ -66,21 +66,28 @@ def mtuci_command(message):
     )
 
 
-def retrieve_schedule(weekday: int):
+def retrieve_schedule(days: list[int], next_week: bool = None):
+    print(days, next_week)
+    
     cursor.execute(
-        "SELECT subject.name AS subject, LOWER(class_type.name) AS subject_type, day, room_number, classes_timetable.start_time AS start_time, teacher.full_name AS teacher FROM bot.timetable "
-        "INNER JOIN bot.class ON timetable.class = class.id INNER JOIN bot.subject ON class.subject = subject.id INNER JOIN bot.class_type ON class.class_type = class_type.id "
-        "INNER JOIN bot.classes_timetable ON timetable.class_number = classes_timetable.id "
-        "INNER JOIN bot.teacher_class ON timetable.class = teacher_class.class INNER JOIN bot.teacher ON teacher_class.teacher = teacher.id "
-        "WHERE day = %s", (weekday,)
+        "SELECT subject.name AS subject, LOWER(class_type.name) AS subject_type, day, room_number, day, classes_timetable.start_time AS start_time, teacher.full_name AS teacher FROM bot.timetable " +
+        "INNER JOIN bot.class ON timetable.class = class.id INNER JOIN bot.subject ON class.subject = subject.id INNER JOIN bot.class_type ON class.class_type = class_type.id " +
+        "INNER JOIN bot.classes_timetable ON timetable.class_number = classes_timetable.id " +
+        "INNER JOIN bot.teacher_class ON timetable.class = teacher_class.class INNER JOIN bot.teacher ON teacher_class.teacher = teacher.id " +
+        "WHERE week = " + ("((SELECT current_week FROM bot.metainfo) + 1) %% 2" if next_week else "(SELECT current_week FROM bot.metainfo)") + " AND day IN %s ORDER BY day", (tuple(days),)
     )
-    return [cursor.fetchall()]
+
+    result = {day: [] for day in days}
+    for timetable_entry in cursor.fetchall():
+        result[timetable_entry["day"]].append(dict(timetable_entry))
+    return result
 
 
-def format_schedule(weekday, schedule) -> str:
+def format_schedule(schedule) -> str:
     formatted_day_schedules = []
-    for day_schedule in schedule:
-        formatted_text = f"{weekday}\n"
+    print(schedule)
+    for day, day_schedule in schedule.items():
+        formatted_text = f"{REVERSE_WEEKDAY_MAPPING[day]}\n"
         formatted_text += "------------------\n"
 
         if day_schedule:
@@ -99,10 +106,11 @@ def answer(message):
     text = message.text
 
     if text in [MONDAY_MESSAGE, TUESDAY_MESSAGE, WEDNESDAY_MESSAGE, THURSDAY_MESSAGE, FRIDAY_MESSAGE]:
-        schedule = retrieve_schedule(WEEKDAY_MAPPING[text])
-        bot.send_message(message.chat.id, format_schedule(text, schedule))
+        schedule = retrieve_schedule([WEEKDAY_MAPPING[text]])
+        bot.send_message(message.chat.id, format_schedule(schedule))
     elif text in [CURRENT_WEEK_MESSAGE, NEXT_WEEK_MESSAGE]:
-        bot.send_message(message.chat.id, f"{text}")
+        schedule = retrieve_schedule(WEEKDAY_MAPPING.values(), text == NEXT_WEEK_MESSAGE)
+        bot.send_message(message.chat.id, format_schedule(schedule))
     else:
         bot.send_message("Извините, я Вас не понял")
 

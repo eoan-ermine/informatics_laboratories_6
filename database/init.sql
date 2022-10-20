@@ -1,5 +1,9 @@
 CREATE SCHEMA bot;
 
+CREATE TABLE IF NOT EXISTS bot.metainfo (
+	"current_week" int NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS bot.subject (
 	"id" serial NOT NULL,
 	"name" varchar(255) NOT NULL,
@@ -40,6 +44,7 @@ CREATE TABLE IF NOT EXISTS bot.teacher_class (
 
 CREATE TABLE IF NOT EXISTS bot.timetable (
 	"id" serial NOT NULL,
+	"week" smallint NOT NULL,
 	"day" smallint NOT NULL,
 	"class" int NOT NULL REFERENCES bot.class(id),
 	"class_number" int NOT NULL REFERENCES bot.classes_timetable(id),
@@ -48,6 +53,8 @@ CREATE TABLE IF NOT EXISTS bot.timetable (
 );
 
 -- Тестовые данные
+
+INSERT INTO bot.metainfo (current_week) VALUES (0);
 
 INSERT INTO
 	bot.subject (id, name)
@@ -112,11 +119,11 @@ VALUES
 ;
 
 INSERT INTO
-	bot.timetable (day, class, room_number, class_number)
+	bot.timetable (week, day, class, room_number, class_number)
 VALUES
-	(1, 1, 518, 2), (1, 3, 520, 3),
-	(2, 5, 406, 1), (2, 7, 131, 2), (2, 10, 515, 3), (2, 12, 223, 4),
-	(3, 14, 336, 1), (3, 16, 412, 2), (3, 17, 212, 3),
-	(4, 8, 344, 4), (4, 9, 456, 5),
-	(5, 13, 344, 1), (5, 17, 212, 2), (5, 19, 406, 3), (5, 2, 302, 4)
+	(0, 1, 1, 518, 2), (0, 1, 3, 520, 3),
+	(0, 2, 5, 406, 1), (0, 2, 7, 131, 2), (0, 2, 10, 515, 3), (0, 2, 12, 223, 4),
+	(0, 3, 14, 336, 1), (0, 3, 16, 412, 2), (0, 3, 17, 212, 3),
+	(0, 4, 8, 344, 4), (0, 4, 9, 456, 5),
+	(0, 5, 13, 344, 1), (0, 5, 17, 212, 2), (0, 5, 19, 406, 3), (0, 5, 2, 302, 4)
 ;
