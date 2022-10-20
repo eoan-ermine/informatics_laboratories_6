@@ -77,18 +77,20 @@ def retrieve_schedule(weekday: int):
     return [cursor.fetchall()]
 
 
-def format_schedule(schedule) -> str:
+def format_schedule(weekday, schedule) -> str:
     formatted_day_schedules = []
     for day_schedule in schedule:
+        formatted_text = f"{weekday}\n"
+        formatted_text += "------------------\n"
+
         if day_schedule:
-            formatted_day_schedules.append(
-                f"{REVERSE_WEEKDAY_MAPPING[day_schedule[0]['day']]}\n" +
-                "------------------\n" +
-                "\n".join([f"{timetable['subject']} ({timetable['subject_type']})\t{timetable['room_number']}\t{timetable['start_time']}\t{timetable['teacher']}" for timetable in day_schedule]) +
-                "\n------------------\n"
-            )
+            formatted_text += "\n".join([f"{timetable['subject']} ({timetable['subject_type']})\t{timetable['room_number']}\t{timetable['start_time']}\t{timetable['teacher']}" for timetable in day_schedule])
         else:
-            formatted_day_schedules.append("К сожалению, у нас нет расписания на этот день")
+            formatted_text += "К сожалению, у нас нет расписания на этот день"
+
+        formatted_text += "\n------------------\n"
+        formatted_day_schedules.append(formatted_text)
+
     return "\n".join(formatted_day_schedules)
 
 
@@ -98,7 +100,7 @@ def answer(message):
 
     if text in [MONDAY_MESSAGE, TUESDAY_MESSAGE, WEDNESDAY_MESSAGE, THURSDAY_MESSAGE, FRIDAY_MESSAGE]:
         schedule = retrieve_schedule(WEEKDAY_MAPPING[text])
-        bot.send_message(message.chat.id, format_schedule(schedule))
+        bot.send_message(message.chat.id, format_schedule(text, schedule))
     elif text in [CURRENT_WEEK_MESSAGE, NEXT_WEEK_MESSAGE]:
         bot.send_message(message.chat.id, f"{text}")
     else:
