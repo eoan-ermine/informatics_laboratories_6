@@ -52,11 +52,21 @@ def start(message):
 def help_command(message):
     bot.send_message(
         message.chat.id,
-        "Я умею сообщать вам расписание и предоставлять вам ссылку на официальный сайт МТУСИ\n\n"
+        "Я умею сообщать вам расписание и информацию о текущей неделе; предоставлять вам ссылку на официальный сайт МТУСИ\n\n"
         "/help — получить список доступных команд\n"
+        "/week - получить информацию о том, является четной ли или нет текущая неделя\n"
         "/mtuci — получить ссылку на официальный сайт МТУСИ"
     )
 
+
+@bot.message_handler(commands=["week"])
+def week_command(message):
+    cursor.execute("SELECT current_week FROM bot.metainfo")
+    current_week = cursor.fetchone()["current_week"]
+    bot.send_message(
+        message.chat.id,
+        "Сейчас идет " + ("нечётная" if current_week % 2 else "чётная") + " неделя"
+    )
 
 @bot.message_handler(commands=["mtuci"])
 def mtuci_command(message):
