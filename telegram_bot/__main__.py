@@ -68,8 +68,8 @@ def mtuci_command(message):
 
 def retrieve_schedule(weekday: int):
     cursor.execute(
-        "SELECT subject.name AS subject, day, room_number, classes_timetable.start_time AS start_time, teacher.full_name AS teacher FROM bot.timetable "
-        "INNER JOIN bot.class ON timetable.class = class.id INNER JOIN bot.subject ON class.subject = subject.id "
+        "SELECT subject.name AS subject, LOWER(class_type.name) AS subject_type, day, room_number, classes_timetable.start_time AS start_time, teacher.full_name AS teacher FROM bot.timetable "
+        "INNER JOIN bot.class ON timetable.class = class.id INNER JOIN bot.subject ON class.subject = subject.id INNER JOIN bot.class_type ON class.class_type = class_type.id "
         "INNER JOIN bot.classes_timetable ON timetable.class_number = classes_timetable.id "
         "INNER JOIN bot.teacher_class ON timetable.class = teacher_class.class INNER JOIN bot.teacher ON teacher_class.teacher = teacher.id "
         "WHERE day = %s", (weekday,)
@@ -84,7 +84,7 @@ def format_schedule(schedule) -> str:
             formatted_day_schedules.append(
                 f"{REVERSE_WEEKDAY_MAPPING[day_schedule[0]['day']]}\n" +
                 "------------------\n" +
-                "\n".join([f"{timetable['subject']}\t{timetable['room_number']}\t{timetable['start_time']}\t{timetable['teacher']}" for timetable in day_schedule]) +
+                "\n".join([f"{timetable['subject']} ({timetable['subject_type']})\t{timetable['room_number']}\t{timetable['start_time']}\t{timetable['teacher']}" for timetable in day_schedule]) +
                 "\n------------------\n"
             )
         else:
