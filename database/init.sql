@@ -6,19 +6,44 @@ CREATE TABLE IF NOT EXISTS bot.subject (
 	CONSTRAINT "subject_pk" PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS bot.class_type (
+	"id" serial NOT NULL,
+	"name" varchar(255) NOT NULL,
+	CONSTRAINT "class_type_pk" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS bot.class (
+	"id" serial NOT NULL,
+	"subject" int NOT NULL REFERENCES bot.subject(id),
+	"class_type" int NOT NULL REFERENCES bot.class_type(id),
+	CONSTRAINT "class_pk" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS bot.classes_timetable(
+	"id" serial NOT NULL,
+	"start_time" time NOT NULL,
+	CONSTRAINT "classes_timetable_pk" PRIMARY KEY ("id")
+);
+
 CREATE TABLE IF NOT EXISTS bot.teacher (
 	"id" serial NOT NULL,
 	"full_name" varchar(255) NOT NULL,
-	"subject" int NOT NULL REFERENCES bot.subject(id),
 	CONSTRAINT "teacher_pk" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS bot.teacher_class (
+	"id" serial NOT NULL,
+	"teacher" int NOT NULL REFERENCES bot.teacher(id),
+	"class" int NOT NULL REFERENCES bot.class(id),
+	CONSTRAINT "teacher_class_pk" PRIMARY KEY ("id")
 );
 
 CREATE TABLE IF NOT EXISTS bot.timetable (
 	"id" serial NOT NULL,
 	"day" smallint NOT NULL,
-	"subject" int NOT NULL REFERENCES bot.subject(id),
+	"class" int NOT NULL REFERENCES bot.class(id),
+	"class_number" int NOT NULL REFERENCES bot.classes_timetable(id),
 	"room_number" int NOT NULL,
-	"start_time" TIME NOT NULL,
 	CONSTRAINT "timetable_pk" PRIMARY KEY ("id")
 );
 
@@ -35,21 +60,63 @@ VALUES
 ;
 
 INSERT INTO
-	bot.teacher (id, full_name, subject)
+	bot.class_type (id, name)
 VALUES
-	(1, 'Изотова А.А.', 1), (2, 'Изотова А.А.', 2),
-	(3, 'Девайкин И.А.', 3), (4, 'Изотова А.А', 4),
-	(5, 'Рывлина А.А.', 5), (6, 'Артамонова Я.С.', 6),
-	(7, 'Мальцева С.Н.', 7), (8, 'Горячева Н.Н.', 8),
-	(9, 'Изотова А.А.', 9)
+	(1, 'Лекция'), (2, 'Практическое занятие'), (3, 'Лабораторная работа')
 ;
 
 INSERT INTO
-	bot.timetable (day, subject, room_number, start_time)
+	bot.class (id, subject, class_type)
 VALUES
-	(1, 1, 518, '11:20'), (1, 1, 520, '13:10'),
-	(2, 2, 406, '9:30'), (2, 3, 131, '11:20'), (2, 4, 515, '13:10'), (2, 5, 223, '15:25'),
-	(3, 6, 336, '9:30'), (3, 7, 412, '11:20'), (3, 8, 212, '13:10'),
-	(4, 4, 344, '15:25'), (4, 4, 456, '17:15'),
-	(5, 6, 344, '9:30'), (5, 8, 212, '11:20'), (5, 9, 406, '13:10'), (5, 1, 302, '15:25')
+	(1, 1, 1), (2, 1, 2), (3, 1, 3), (4, 2, 1), (5, 2, 2),
+	(6, 3, 1), (7, 3, 2), (8, 4, 1), (9, 4, 2), (10, 4, 3),
+	(11, 5, 1), (12, 5, 2), (13, 6, 1), (14, 6, 2),
+	(15, 7, 1), (16, 7, 2), (17, 8, 2), (18, 9, 1), (19, 9, 2)
+;
+
+INSERT INTO
+	bot.classes_timetable (id, start_time)
+VALUES
+	(1, '9:30'), (2, '11:20'), (3, '13:10'), (4, '15:25'), (5, '17:15')
+;
+
+INSERT INTO
+	bot.teacher (id, full_name)
+VALUES
+	(1, 'Бабердин П.В.'), (2, 'Изотова А.А.'), (3, 'Девайкин И.А.'),
+	(4, 'Рывлина А.А.'), (5, 'Артамонова Я.С.'), (6, 'Мальцева С.Н.'),
+	(7, 'Горячева Н.Н.'), (8, 'Гематудинов Р.А.'), (9, 'Клешнин Н.Г.')
+;
+
+INSERT INTO
+	bot.teacher_class (teacher, class)
+VALUES
+	-- Бабердин — лекции по вычтеху
+	(1, 1),
+	-- Изотова — лекции, практики по вычтеху, практики по аиг и вышмату
+	(2, 2), (2, 3), (2, 5), (2, 19),
+	-- Девайкин — практики по философии
+	(3, 7),
+	-- Рывлина — лекции и практические по компьютерной графике
+	(4, 11), (4, 12),
+	-- Артамонова — лекции и практики по социологии
+	(5, 13), (5, 14),
+	-- Мальцева — лекции и практики по английскому языку
+	(6, 15), (6, 16),
+	-- Горячева — практики по физической культуре
+	(7, 17),
+	-- Гематудинов — лекции по ВВИТ
+	(8, 8),
+	-- Клешнин — практики по ВВИТ
+	(9, 9)
+;
+
+INSERT INTO
+	bot.timetable (day, class, room_number, class_number)
+VALUES
+	(1, 1, 518, 2), (1, 3, 520, 3),
+	(2, 5, 406, 1), (2, 7, 131, 2), (2, 10, 515, 3), (2, 12, 223, 4),
+	(3, 14, 336, 1), (3, 16, 412, 2), (3, 17, 212, 3),
+	(4, 8, 344, 4), (4, 9, 456, 5),
+	(5, 13, 344, 1), (5, 17, 212, 2), (5, 19, 406, 3), (5, 2, 302, 4)
 ;

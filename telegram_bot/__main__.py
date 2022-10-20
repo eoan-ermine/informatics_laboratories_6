@@ -67,7 +67,13 @@ def mtuci_command(message):
 
 
 def retrieve_schedule(weekday: int):
-    cursor.execute("SELECT subject.name AS subject, day, room_number, start_time, teacher.full_name AS teacher FROM bot.timetable INNER JOIN bot.subject ON timetable.subject = subject.id INNER JOIN bot.teacher ON timetable.subject = teacher.subject WHERE day = %s", (weekday,))
+    cursor.execute(
+        "SELECT subject.name AS subject, day, room_number, classes_timetable.start_time AS start_time, teacher.full_name AS teacher FROM bot.timetable "
+        "INNER JOIN bot.class ON timetable.class = class.id INNER JOIN bot.subject ON class.subject = subject.id "
+        "INNER JOIN bot.classes_timetable ON timetable.class_number = classes_timetable.id "
+        "INNER JOIN bot.teacher_class ON timetable.class = teacher_class.class INNER JOIN bot.teacher ON teacher_class.teacher = teacher.id "
+        "WHERE day = %s", (weekday,)
+    )
     return [cursor.fetchall()]
 
 
