@@ -67,8 +67,6 @@ def mtuci_command(message):
 
 
 def retrieve_schedule(days: list[int], next_week: bool = None):
-    print(days, next_week)
-    
     cursor.execute(
         "SELECT subject.name AS subject, LOWER(class_type.name) AS subject_type, day, room_number, day, classes_timetable.start_time AS start_time, teacher.full_name AS teacher FROM bot.timetable " +
         "INNER JOIN bot.class ON timetable.class = class.id INNER JOIN bot.subject ON class.subject = subject.id INNER JOIN bot.class_type ON class.class_type = class_type.id " +
@@ -85,7 +83,6 @@ def retrieve_schedule(days: list[int], next_week: bool = None):
 
 def format_schedule(schedule) -> str:
     formatted_day_schedules = []
-    print(schedule)
     for day, day_schedule in schedule.items():
         formatted_text = f"{REVERSE_WEEKDAY_MAPPING[day]}\n"
         formatted_text += "------------------\n"
